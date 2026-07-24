@@ -56,7 +56,7 @@ export async function POST() {
             agentId: agent?.id ?? null,
             leadId,
             type: "lead_qualified",
-            text: (agent?.name ?? "Research") + " prepared a strategy for " + lead.name,
+            text: "Prepared a strategy for " + lead.name,
           });
         }
         await db.update(jobs).set({ status: "done", finishedAt: new Date() }).where(eq(jobs.id, job.id));

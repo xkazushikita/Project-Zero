@@ -153,7 +153,11 @@ export default function OrbitDashboard({
   const tasksRunning = ws.tasksRunning;
   const monthLabel = new Date().toLocaleString("en-US", { month: "long" }).toUpperCase();
 
-  const actLine = (f?: { agentId: string; text: string }) => (f ? (byId(f.agentId)?.name ?? "Agent") + " " + f.text : "");
+  const actLine = (f?: { agentId: string; text: string }) => {
+    if (!f) return "";
+    const name = byId(f.agentId)?.name;
+    return name ? name + " " + f.text.charAt(0).toLowerCase() + f.text.slice(1) : f.text;
+  };
   const hubLive = actLine(acts[0]).slice(0, 90);
   const hubLive2 = actLine(acts[1]).slice(0, 90);
 
