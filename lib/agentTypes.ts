@@ -39,8 +39,8 @@ export interface AgentType {
 export const AGENT_TYPES: AgentType[] = [
   {
     id: "discovery",
-    name: "Kaneki",
-    initials: "KN",
+    name: "Kaus",
+    initials: "KA",
     role: "Research",
     color: "#0EA5E9",
     capabilities: ["scrape"],
@@ -83,8 +83,8 @@ export const AGENT_TYPES: AgentType[] = [
   },
   {
     id: "scheduler",
-    name: "Itachi",
-    initials: "IT",
+    name: "Saikol",
+    initials: "SA",
     role: "Scheduler",
     color: "#F43F7E",
     capabilities: ["book-meeting"],

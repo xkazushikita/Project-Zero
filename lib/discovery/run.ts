@@ -38,7 +38,7 @@ export async function runDiscovery(): Promise<{ found: number }> {
       await logActivity({
         agentId: scout?.id ?? "discovery",
         type: "lead_added",
-        text: (scout?.name ?? "Kaneki") + " found " + found + " new brand" + (found === 1 ? "" : "s") + " for you to review",
+        text: (scout?.name ?? "Kaus") + " found " + found + " new brand" + (found === 1 ? "" : "s") + " for you to review",
       });
     }
     await trackJobFinish(jobId, "done");

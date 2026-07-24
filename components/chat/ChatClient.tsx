@@ -46,7 +46,7 @@ export default function ChatClient({ initialMessages, agents }: { initialMessage
       <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 14, paddingBottom: 12 }}>
         {messages.length === 0 && (
           <div style={{ color: colors.fog, fontSize: 13.5 }}>
-            Try: &quot;@{agents[0]?.name ?? "Kaneki"} find me brands&quot;
+            Try: &quot;@{agents[0]?.name ?? "Kaus"} find me brands&quot;
           </div>
         )}
         {messages.map((m) => {
