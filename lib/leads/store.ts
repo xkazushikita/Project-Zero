@@ -49,6 +49,26 @@ export async function saveLeadResearch(id: string, research: ResearchBrief) {
   revalidatePath("/deals");
 }
 
+// For the public, logged-out welcome page — real pipeline numbers instead of
+// the generic demo stats (this is a single-creator app, so there's only ever
+// one real pipeline to show, same assumption as getPublicAgentShowcase).
+export async function getPublicWorkspaceStats(): Promise<{ leadsWorked: number; tasksRunning: number; perAgent: { agentId: string; leadsWorked: number }[] }> {
+  if (!isDbConfigured()) return { leadsWorked: 0, tasksRunning: 0, perAgent: [] };
+  const db = getDb()!;
+  const rows = await db.select().from(leads).where(eq(leads.review, "accepted"));
+  const now = new Date();
+  const leadsWorked = rows.filter((r) => {
+    const d = new Date(r.createdAt);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+  const tasksRunning = rows.filter((r) => r.status !== "booked").length;
+  const counts = new Map<string, number>();
+  for (const r of rows) {
+    if (r.agentId) counts.set(r.agentId, (counts.get(r.agentId) ?? 0) + 1);
+  }
+  return { leadsWorked, tasksRunning, perAgent: Array.from(counts, ([agentId, leadsWorked]) => ({ agentId, leadsWorked })) };
+}
+
 export async function listLeads(): Promise<Lead[]> {
   const { userId } = await auth();
   if (!userId || !isDbConfigured()) return [];

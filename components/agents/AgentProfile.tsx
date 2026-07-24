@@ -28,7 +28,9 @@ function resizeToDataUrl(file: File): Promise<string> {
         if (!ctx) return reject(new Error("Canvas unavailable"));
         const side = Math.min(img.width, img.height);
         const sx = (img.width - side) / 2;
-        const sy = (img.height - side) / 2;
+        // Center the crop horizontally, but bias it toward the top vertically —
+        // a dead-center crop on a tall portrait photo cuts off the top of the head.
+        const sy = (img.height - side) * 0.2;
         ctx.drawImage(img, sx, sy, side, side, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
         resolve(canvas.toDataURL("image/jpeg", 0.85));
       };

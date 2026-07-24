@@ -31,6 +31,16 @@ export async function listRecentActivity(limit = 10): Promise<{ agentId: string 
   return rows;
 }
 
+// For the public, logged-out welcome page — no signed-in user to scope to, so this
+// shows real recent activity (this is a single-creator app, so there's only ever
+// one real activity log to show, same assumption as getPublicAgentShowcase).
+export async function getPublicRecentActivity(limit = 10): Promise<{ agentId: string | null; text: string }[]> {
+  if (!isDbConfigured()) return [];
+  const db = getDb()!;
+  const rows = await db.select({ agentId: activity.agentId, text: activity.text }).from(activity).orderBy(desc(activity.createdAt)).limit(limit);
+  return rows;
+}
+
 export interface Notification {
   id: string;
   agentId: string | null;

@@ -4,9 +4,12 @@ import OrbitDashboard from "@/components/OrbitDashboard";
 import Reveal from "@/components/Reveal";
 import HeroIntro from "@/components/HeroIntro";
 import { getPublicAgentShowcase } from "@/lib/agents/store";
+import { getPublicRecentActivity } from "@/lib/activity/store";
+import { getPublicWorkspaceStats } from "@/lib/leads/store";
 import { colors, fonts } from "@/lib/theme";
 
-// Pulls real agent photos from the database on every visit, not just at build time.
+// Pulls real agent photos, pipeline stats, and activity from the database on
+// every visit, not just at build time.
 export const dynamic = "force-dynamic";
 
 const BUTTON_GHOST: CSSProperties = {
@@ -83,7 +86,15 @@ const STEPS = [
 ];
 
 export default async function LandingPage() {
-  const showcaseAgents = await getPublicAgentShowcase();
+  const [showcaseAgents, publicActivity, publicStats] = await Promise.all([
+    getPublicAgentShowcase(),
+    getPublicRecentActivity(50),
+    getPublicWorkspaceStats(),
+  ]);
+  const activityItems = publicActivity
+    .filter((a): a is { agentId: string; text: string } => Boolean(a.agentId))
+    .map((a) => ({ agentId: a.agentId, text: a.text }));
+  const activeAgents = new Set(activityItems.map((a) => a.agentId)).size;
   return (
     <main style={{ maxWidth: 1216, margin: "0 auto", padding: "0 24px" }}>
       <HeroIntro>
@@ -117,7 +128,7 @@ export default async function LandingPage() {
           </div>
 
           <div data-intro>
-            <OrbitDashboard agents={showcaseAgents} />
+            <OrbitDashboard agents={showcaseAgents} activity={activityItems} stats={{ activeAgents, ...publicStats }} />
           </div>
 
           <div style={{ textAlign: "center", maxWidth: 720, margin: "40px auto 0" }}>
