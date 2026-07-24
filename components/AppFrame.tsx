@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { colors, fonts } from "@/lib/theme";
 import GlobalSearch from "./GlobalSearch";
+import NotificationBell from "./NotificationBell";
+import type { Notification } from "@/lib/activity/store";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard" },
@@ -17,7 +19,15 @@ const NAV_ITEMS = [
   { href: "/settings", label: "Settings" },
 ];
 
-export default function AppFrame({ children, userName }: { children: React.ReactNode; userName: string }) {
+export default function AppFrame({
+  children,
+  userName,
+  initialNotifications,
+}: {
+  children: React.ReactNode;
+  userName: string;
+  initialNotifications: Notification[];
+}) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -119,6 +129,9 @@ export default function AppFrame({ children, userName }: { children: React.React
             </svg>
           </button>
           <GlobalSearch />
+          <div style={{ marginLeft: "auto" }}>
+            <NotificationBell initial={initialNotifications} />
+          </div>
         </header>
         <main style={{ flex: 1, padding: "28px" }}>{children}</main>
       </div>

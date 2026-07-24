@@ -39,8 +39,8 @@ export interface AgentType {
 export const AGENT_TYPES: AgentType[] = [
   {
     id: "discovery",
-    name: "Brand Scout",
-    initials: "BS",
+    name: "Kaneki",
+    initials: "KN",
     role: "Research",
     color: "#0EA5E9",
     capabilities: ["scrape"],
@@ -50,8 +50,8 @@ export const AGENT_TYPES: AgentType[] = [
   },
   {
     id: "outreach",
-    name: "Outreach Writer",
-    initials: "OW",
+    name: "Goku",
+    initials: "GK",
     role: "Initial Outreach",
     color: "#5122C1",
     capabilities: ["outreach"],
@@ -61,8 +61,8 @@ export const AGENT_TYPES: AgentType[] = [
   },
   {
     id: "proposal",
-    name: "Proposal Specialist",
-    initials: "PS",
+    name: "Anaya",
+    initials: "AN",
     role: "Proposal",
     color: "#7C3AED",
     capabilities: ["proposal"],
@@ -72,8 +72,8 @@ export const AGENT_TYPES: AgentType[] = [
   },
   {
     id: "followup",
-    name: "Follow-up Assistant",
-    initials: "FA",
+    name: "Lexie",
+    initials: "LX",
     role: "Follow-up",
     color: "#8B5CF6",
     capabilities: ["follow-up"],
@@ -83,8 +83,8 @@ export const AGENT_TYPES: AgentType[] = [
   },
   {
     id: "scheduler",
-    name: "Meeting Coordinator",
-    initials: "MC",
+    name: "Itachi",
+    initials: "IT",
     role: "Scheduler",
     color: "#F43F7E",
     capabilities: ["book-meeting"],

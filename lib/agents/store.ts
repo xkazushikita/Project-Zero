@@ -1,6 +1,6 @@
 "use server";
 import { auth } from "@clerk/nextjs/server";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getDb, isDbConfigured } from "@/lib/db";
 import { agents as agentsTable, agentConfig, agentStates, teams as teamsTable, teamMembers } from "@/lib/db/schema";
@@ -25,6 +25,7 @@ export async function listAgents(): Promise<AppAgent[]> {
       status: a.status,
       task: a.task,
       goal: a.goal,
+      avatarUrl: null,
       capabilities: a.capabilities,
       type: a.id,
       isPreset: true,
@@ -53,6 +54,7 @@ export async function listAgents(): Promise<AppAgent[]> {
       status: st?.paused ? "offline" : a.status,
       task: a.task,
       goal: cfg?.goal || a.goal,
+      avatarUrl: cfg?.avatarUrl ?? null,
       capabilities: a.capabilities,
       type: a.id,
       isPreset: true,
@@ -73,6 +75,7 @@ export async function listAgents(): Promise<AppAgent[]> {
         status: (st?.paused ? "offline" : r.status) as AgentStatus,
         task: r.task ?? "",
         goal: r.goal ?? "",
+        avatarUrl: r.avatarUrl ?? null,
         capabilities: (r.capabilities as CapabilityId[]) ?? [],
         type: "custom",
         isPreset: false,
@@ -148,6 +151,44 @@ export async function createAgent(input: { name: string; role: string; goal: str
   });
   revalidatePath("/agents");
   revalidatePath("/dashboard");
+}
+
+export async function updateAgentProfile(agentId: string, input: { role: string; goal: string }) {
+  const { userId } = await auth();
+  if (!userId || !isDbConfigured()) return;
+  const db = getDb()!;
+  const isPreset = AGENT_TYPES.some((a) => a.id === agentId);
+  if (isPreset) {
+    await db
+      .insert(agentConfig)
+      .values({ userId, agentId, role: input.role, goal: input.goal })
+      .onConflictDoUpdate({ target: [agentConfig.userId, agentConfig.agentId], set: { role: input.role, goal: input.goal } });
+  } else {
+    await db.update(agentsTable).set({ role: input.role, goal: input.goal }).where(and(eq(agentsTable.userId, userId), eq(agentsTable.id, agentId)));
+  }
+  revalidatePath("/agents");
+  revalidatePath("/agents/" + agentId);
+  revalidatePath("/dashboard");
+}
+
+export async function setAgentAvatar(agentId: string, avatarUrl: string | null) {
+  const { userId } = await auth();
+  if (!userId || !isDbConfigured()) return;
+  if (avatarUrl && (!avatarUrl.startsWith("data:image/") || avatarUrl.length > 400_000)) return;
+  const db = getDb()!;
+  const isPreset = AGENT_TYPES.some((a) => a.id === agentId);
+  if (isPreset) {
+    await db
+      .insert(agentConfig)
+      .values({ userId, agentId, avatarUrl })
+      .onConflictDoUpdate({ target: [agentConfig.userId, agentConfig.agentId], set: { avatarUrl } });
+  } else {
+    await db.update(agentsTable).set({ avatarUrl }).where(and(eq(agentsTable.userId, userId), eq(agentsTable.id, agentId)));
+  }
+  revalidatePath("/agents");
+  revalidatePath("/agents/" + agentId);
+  revalidatePath("/dashboard");
+  revalidatePath("/chat");
 }
 
 export async function pauseAgent(agentId: string, paused: boolean) {

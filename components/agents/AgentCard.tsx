@@ -2,11 +2,11 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { colors, fonts } from "@/lib/theme";
-import { av } from "@/lib/visuals";
 import { statusMeta } from "@/lib/status";
 import { pauseAgent, removeAgent } from "@/lib/agents/store";
 import type { AppAgent } from "@/lib/agents/types";
 import { CAPABILITIES } from "@/lib/agentTypes";
+import AgentAvatar from "./AgentAvatar";
 
 export default function AgentCard({ agent }: { agent: AppAgent }) {
   const router = useRouter();
@@ -26,7 +26,7 @@ export default function AgentCard({ agent }: { agent: AppAgent }) {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }} onClick={() => router.push("/agents/" + agent.id)}>
-        <div style={{ ...cssToObj(av(agent, 42)), border: "2px solid " + colors.obsidian }}>{agent.initials}</div>
+        <AgentAvatar avatarUrl={agent.avatarUrl} color={agent.color} initials={agent.initials} size={42} border={"2px solid " + colors.obsidian} />
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 600, color: colors.paperWhite, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {agent.name}
@@ -111,16 +111,4 @@ export default function AgentCard({ agent }: { agent: AppAgent }) {
       </div>
     </div>
   );
-}
-
-// `av()` returns a CSS-string for the shared dashboard primitives; parse it into a plain style object here.
-function cssToObj(cssString: string): React.CSSProperties {
-  const o: Record<string, string> = {};
-  for (const decl of cssString.split(";")) {
-    const i = decl.indexOf(":");
-    if (i < 0) continue;
-    const prop = decl.slice(0, i).trim().replace(/-([a-z])/g, (_m, c: string) => c.toUpperCase());
-    o[prop] = decl.slice(i + 1).trim();
-  }
-  return o as React.CSSProperties;
 }

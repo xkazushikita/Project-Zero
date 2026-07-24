@@ -11,6 +11,7 @@ export interface AppAgent {
   status: AgentStatus;
   task: string;
   goal: string;
+  avatarUrl: string | null;
   capabilities: CapabilityId[];
   type: string;
   isPreset: boolean;

@@ -1,5 +1,6 @@
 import { colors } from "@/lib/theme";
 import type { AppTeam, AppAgent } from "@/lib/agents/types";
+import AgentAvatar from "./AgentAvatar";
 
 export default function TeamCard({ team, agents }: { team: AppTeam; agents: AppAgent[] }) {
   const members = team.members.map((id) => agents.find((a) => a.id === id)).filter(Boolean) as AppAgent[];
@@ -27,25 +28,8 @@ export default function TeamCard({ team, agents }: { team: AppTeam; agents: AppA
       <div style={{ fontSize: 13, color: colors.mist, lineHeight: 1.5, marginBottom: 16 }}>{team.description}</div>
       <div style={{ display: "flex", alignItems: "center", gap: -6 }}>
         {members.map((m, i) => (
-          <div
-            key={m.id}
-            style={{
-              marginLeft: i === 0 ? 0 : -8,
-              width: 30,
-              height: 30,
-              borderRadius: "50%",
-              background: m.color,
-              color: "#fff",
-              fontSize: 11,
-              fontWeight: 700,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              border: "2px solid " + colors.onyx,
-            }}
-            title={m.name}
-          >
-            {m.initials}
+          <div key={m.id} style={{ marginLeft: i === 0 ? 0 : -8 }} title={m.name}>
+            <AgentAvatar avatarUrl={m.avatarUrl} color={m.color} initials={m.initials} size={30} border={"2px solid " + colors.onyx} />
           </div>
         ))}
         {members.length === 0 && <div style={{ fontSize: 12.5, color: colors.fog }}>No teammates yet</div>}

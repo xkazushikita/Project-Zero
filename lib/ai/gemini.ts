@@ -1,6 +1,9 @@
 import "server-only";
 
 const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models/";
+// Used automatically when the primary model is rate-limited, so a busy quota
+// degrades to "slightly different model" instead of "feature doesn't work."
+const FALLBACK_MODEL = "gemini-flash-lite-latest";
 
 export function isGeminiConfigured(): boolean {
   return !!process.env.GEMINI_API_KEY;
@@ -18,10 +21,14 @@ interface CallOpts {
   responseSchema?: unknown;
 }
 
-async function callGemini(system: string, turns: Turn[], opts: CallOpts = {}): Promise<string> {
+function isRateLimitError(err: unknown): boolean {
+  const msg = String(err);
+  return msg.includes("429") || msg.includes("RESOURCE_EXHAUSTED") || msg.includes("quota");
+}
+
+async function callGeminiOnce(model: string, system: string, turns: Turn[], opts: CallOpts): Promise<string> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error("Gemini not configured");
-  const model = process.env.GEMINI_MODEL || "gemini-flash-latest";
   const url = API_BASE + model + ":generateContent?key=" + key;
 
   const controller = new AbortController();
@@ -52,6 +59,17 @@ async function callGemini(system: string, turns: Turn[], opts: CallOpts = {}): P
     return text;
   } finally {
     clearTimeout(timeout);
+  }
+}
+
+async function callGemini(system: string, turns: Turn[], opts: CallOpts = {}): Promise<string> {
+  const primaryModel = process.env.GEMINI_MODEL || "gemini-flash-latest";
+  try {
+    return await callGeminiOnce(primaryModel, system, turns, opts);
+  } catch (err) {
+    if (primaryModel === FALLBACK_MODEL || !isRateLimitError(err)) throw err;
+    // Primary model is rate-limited — automatically retry once on the fallback model.
+    return await callGeminiOnce(FALLBACK_MODEL, system, turns, opts);
   }
 }
 

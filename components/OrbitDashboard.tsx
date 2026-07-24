@@ -3,10 +3,17 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AGENT_TYPES, TEAM_TEMPLATES } from "@/lib/agentTypes";
 import { demoStats, demoActivity, type WorkspaceStats, type ActivityItem } from "@/lib/demoData";
+import { listActiveAgentIds } from "@/lib/jobs/store";
 import { statusMeta } from "@/lib/status";
 import { av, hubIcon, agentActivityType } from "@/lib/visuals";
 import { colors } from "@/lib/theme";
 import { css, Box } from "./primitives";
+
+function formatFollowers(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M followers";
+  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, "") + "K followers";
+  return n + " followers";
+}
 
 // [animation, tint] per activity type — the glyph itself comes from hubIcon().
 const hubIcons: Record<string, [string, string]> = {
@@ -29,6 +36,7 @@ export interface OrbitAgent {
   color: string;
   status: "working" | "waiting" | "offline" | "error";
   capabilities: string[];
+  avatarUrl?: string | null;
 }
 export interface OrbitTeam {
   id: string;
@@ -42,6 +50,9 @@ export default function OrbitDashboard({
   stats: statsProp,
   activity: activityProp,
   chromeAbove = 178,
+  live = false,
+  creatorAvatarUrl = null,
+  creatorFollowers = null,
 }: {
   agents?: OrbitAgent[];
   teams?: OrbitTeam[];
@@ -50,15 +61,23 @@ export default function OrbitDashboard({
   // Vertical space (px) already used by page content above this card (heading, stat tiles, etc.)
   // — the card sizes itself around whatever's left, so it never overflows the viewport.
   chromeAbove?: number;
+  // Polls for genuinely-running tasks every few seconds so the orbit updates
+  // itself the instant a task starts anywhere in the app — the real Dashboard
+  // turns this on; the logged-out marketing hero leaves it off.
+  live?: boolean;
+  // When TikTok is connected, the creator's own photo + follower count take over the center hub.
+  creatorAvatarUrl?: string | null;
+  creatorFollowers?: number | null;
 } = {}) {
   const router = useRouter();
   const [hubTeam, setHubTeam] = useState("all");
   const [dims, setDims] = useState({ w: 1280, h: 800 });
   const [reduced, setReduced] = useState(false);
   const [tick, setTick] = useState(0);
+  const [liveWorkingIds, setLiveWorkingIds] = useState<string[]>([]);
 
   // No real data passed in (the marketing landing page) → fall back to the static preset showcase.
-  const agents = agentsProp ?? AGENT_TYPES;
+  const agents: OrbitAgent[] = agentsProp ?? AGENT_TYPES.map((a) => ({ ...a, avatarUrl: null }));
   const teams = teamsProp ?? TEAM_TEMPLATES;
   const byId = (id: string) => agents.find((a) => a.id === id);
   const ws = statsProp ?? demoStats;
@@ -83,6 +102,21 @@ export default function OrbitDashboard({
     const hub = setInterval(() => setTick((t) => t + 1), 3200);
     return () => clearInterval(hub);
   }, []);
+  useEffect(() => {
+    if (!live) return;
+    let cancelled = false;
+    const poll = () => {
+      listActiveAgentIds().then((ids) => {
+        if (!cancelled) setLiveWorkingIds(ids);
+      });
+    };
+    poll();
+    const id = setInterval(poll, 3500);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [live]);
 
   const hubMembers =
     hubTeam === "all"
@@ -96,13 +130,25 @@ export default function OrbitDashboard({
     const y = Math.round(262 + Math.sin(ang) * 186);
     const type = agentActivityType(a.capabilities);
     const ic = hubIcons[type];
-    const m = statusMeta(a.status);
+    const isLive = liveWorkingIds.includes(a.id);
+    const effectiveStatus = isLive ? "working" : a.status;
+    const m = statusMeta(effectiveStatus);
     const latest = acts.find((f) => f.agentId === a.id);
-    return { a, i, x, y, m, ic, type, badge: latest ? latest.text.slice(0, 40) : a.status === "working" ? "Working…" : "Idle" };
+    const liveAgent = { ...a, status: effectiveStatus };
+    return {
+      a: liveAgent,
+      i,
+      x,
+      y,
+      m,
+      ic,
+      type,
+      badge: isLive ? "Working right now…" : latest ? latest.text.slice(0, 40) : a.status === "working" ? "Working…" : "Idle",
+    };
   });
   const collabs = HN >= 5 ? [[0, 2], [1, 4]] : [];
 
-  const hubWorking = ws.activeAgents;
+  const hubWorking = Math.max(ws.activeAgents, liveWorkingIds.length);
   const leadsWorked = ws.leadsWorked;
   const tasksRunning = ws.tasksRunning;
   const monthLabel = new Date().toLocaleString("en-US", { month: "long" }).toUpperCase();
@@ -239,23 +285,40 @@ export default function OrbitDashboard({
             >
               <div
                 style={css(
-                  "width:106px;height:106px;border-radius:50%;background:#040406;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden"
+                  "width:106px;height:106px;border-radius:50%;background:#040406;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;position:relative"
                 )}
               >
-                <div style={css("font-family:'Playfair Display',serif;font-size:26px;font-weight:500;letter-spacing:.01em;color:#ffffff;line-height:1")}>
-                  {leadsWorked}
-                </div>
-                <div
-                  style={css(
-                    "font-size:8.5px;font-weight:600;letter-spacing:.1em;color:" +
-                      colors.mist +
-                      ";margin-top:5px;text-align:center;line-height:1.4"
-                  )}
-                >
-                  BRANDS WORKED
-                  <br />
-                  {monthLabel}
-                </div>
+                {creatorAvatarUrl ? (
+                  <>
+                    <img src={creatorAvatarUrl} alt="You" style={css("position:absolute;inset:0;width:100%;height:100%;object-fit:cover")} />
+                    {creatorFollowers !== null && (
+                      <div
+                        style={css(
+                          "position:absolute;left:0;right:0;bottom:0;padding:5px 0 6px;text-align:center;background:linear-gradient(to top,rgba(0,0,0,.85),rgba(0,0,0,0));font-size:10.5px;font-weight:700;letter-spacing:.02em;color:#ffffff"
+                        )}
+                      >
+                        {formatFollowers(creatorFollowers)}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div style={css("font-family:'Playfair Display',serif;font-size:26px;font-weight:500;letter-spacing:.01em;color:#ffffff;line-height:1")}>
+                      {leadsWorked}
+                    </div>
+                    <div
+                      style={css(
+                        "font-size:8.5px;font-weight:600;letter-spacing:.1em;color:" +
+                          colors.mist +
+                          ";margin-top:5px;text-align:center;line-height:1.4"
+                      )}
+                    >
+                      BRANDS WORKED
+                      <br />
+                      {monthLabel}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -311,7 +374,15 @@ export default function OrbitDashboard({
             >
               <div style={css("position:relative")}>
                 <div className="asteam-orbit-ring" style={css("padding:3px;border-radius:50%;background:#0c0c10;box-shadow:0 0 0 2px " + n.a.color + "55")}>
-                  <div style={css(av(n.a, 46) + ";border:2px solid #08080a")}>{n.a.initials}</div>
+                  {n.a.avatarUrl ? (
+                    <img
+                      src={n.a.avatarUrl}
+                      alt={n.a.initials}
+                      style={css("width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid #08080a;flex:none")}
+                    />
+                  ) : (
+                    <div style={css(av(n.a, 46) + ";border:2px solid #08080a")}>{n.a.initials}</div>
+                  )}
                 </div>
                 <div
                   style={css(

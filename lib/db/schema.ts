@@ -1,4 +1,4 @@
-import { pgTable, text, jsonb, timestamp, integer, boolean, primaryKey, uuid, index } from "drizzle-orm/pg-core";
+import { pgTable, text, jsonb, timestamp, integer, boolean, primaryKey, uuid, index, serial } from "drizzle-orm/pg-core";
 
 // The account. Auth (passwords, Google sign-in, reset) lives in Clerk —
 // id is the Clerk user id, not a generated UUID, and there is no passwordHash.
@@ -26,6 +26,23 @@ export const creatorProfile = pgTable("creator_profile", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// TikTok connection — one row per user, filled in once they connect via OAuth.
+export const tiktokConnections = pgTable("tiktok_connections", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  openId: text("open_id").notNull(),
+  username: text("username"),
+  displayName: text("display_name"),
+  avatarUrl: text("avatar_url"),
+  followerCount: integer("follower_count"),
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token"),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  connectedAt: timestamp("connected_at", { withTimezone: true }).notNull().defaultNow(),
+  syncedAt: timestamp("synced_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // Agents the user created themselves. The five presets are static data in code
 // (lib/agentTypes.ts) — only custom additions and overrides live here.
 export const agents = pgTable(
@@ -42,6 +59,7 @@ export const agents = pgTable(
     score: integer("score"),
     goal: text("goal"),
     char: integer("char"),
+    avatarUrl: text("avatar_url"),
     type: text("type").notNull().default("custom"),
     capabilities: jsonb("capabilities").notNull().default([]),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -80,6 +98,7 @@ export const agentConfig = pgTable(
     agentId: text("agent_id").notNull(),
     role: text("role"),
     goal: text("goal"),
+    avatarUrl: text("avatar_url"),
     permissions: jsonb("permissions"),
     settings: jsonb("settings"),
   },
@@ -161,3 +180,39 @@ export const jobs = pgTable("jobs", {
   startedAt: timestamp("started_at", { withTimezone: true }),
   finishedAt: timestamp("finished_at", { withTimezone: true }),
 });
+
+// Booked brand calls — the calendar's only source.
+export const meetings = pgTable(
+  "meetings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    agentId: text("agent_id"),
+    leadId: uuid("lead_id"),
+    title: text("title").notNull(),
+    kind: text("kind").notNull().default("call"),
+    whenAt: timestamp("when_at", { withTimezone: true }).notNull(),
+    whenLabel: text("when_label"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    userWhenIdx: index("meetings_user_when_idx").on(table.userId, table.whenAt),
+  })
+);
+
+// The team group chat — one shared, ordered thread per user. agentId marks which
+// agent authored an "ai" message (null for the creator's own "me" messages).
+export const messages = pgTable(
+  "messages",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    agentId: text("agent_id"),
+    who: text("who").notNull(),
+    text: text("text").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdx: index("messages_user_idx").on(table.userId, table.id),
+  })
+);

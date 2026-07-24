@@ -2,13 +2,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLead } from "@/lib/leads/store";
 import { listAgents } from "@/lib/agents/store";
+import { listMeetings } from "@/lib/meetings/store";
 import PrepareStrategyButton from "@/components/deals/PrepareStrategyButton";
+import BookMeetingBox from "@/components/calendar/BookMeetingBox";
+import MeetingRow from "@/components/calendar/MeetingRow";
 import { colors, fonts } from "@/lib/theme";
 
 export default async function LeadDetailPage({ params }: { params: { id: string } }) {
-  const [lead, agents] = await Promise.all([getLead(params.id), listAgents()]);
+  const [lead, agents, allMeetings] = await Promise.all([getLead(params.id), listAgents(), listMeetings()]);
   if (!lead) notFound();
   const agent = agents.find((a) => a.id === lead.agentId) ?? null;
+  const leadMeetings = allMeetings.filter((m) => m.leadId === lead.id);
 
   return (
     <div style={{ maxWidth: 680 }}>
@@ -33,6 +37,20 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
 
       <div style={{ margin: "24px 0 28px" }}>
         <PrepareStrategyButton leadId={lead.id} agentId={lead.agentId} hasStrategy={Boolean(lead.research)} />
+      </div>
+
+      <div style={{ border: "1px solid " + colors.graphite, borderRadius: 12, padding: 22, background: colors.onyx, marginBottom: 28 }}>
+        <div style={{ fontSize: 12.5, fontWeight: 600, color: colors.copper, textTransform: "uppercase", letterSpacing: "-0.02em", marginBottom: 14 }}>
+          Book a call
+        </div>
+        <BookMeetingBox leadId={lead.id} brandName={lead.name} />
+        {leadMeetings.length > 0 && (
+          <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 8 }}>
+            {leadMeetings.map((m) => (
+              <MeetingRow key={m.id} meeting={m} />
+            ))}
+          </div>
+        )}
       </div>
 
       {lead.research ? (

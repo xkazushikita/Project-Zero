@@ -2,17 +2,27 @@
 import { useState } from "react";
 import ProfileForm from "./ProfileForm";
 import MediaKitView from "./MediaKitView";
+import TikTokPanel from "./TikTokPanel";
 import type { CreatorProfile } from "@/lib/profile/types";
+import type { TikTokConnection } from "@/lib/tiktok/store";
 import { colors, fonts } from "@/lib/theme";
 
 export default function ProfileClient({
   profile,
   name,
   email,
+  tiktok,
+  tiktokConfigured,
+  tiktokStatus,
+  tiktokReason,
 }: {
   profile: CreatorProfile | null;
   name: string;
   email: string | null;
+  tiktok: TikTokConnection | null;
+  tiktokConfigured: boolean;
+  tiktokStatus: string | null;
+  tiktokReason: string | null;
 }) {
   const [editing, setEditing] = useState(!profile);
 
@@ -40,6 +50,7 @@ export default function ProfileClient({
           </button>
         )}
       </div>
+      <TikTokPanel connection={tiktok} configured={tiktokConfigured} status={tiktokStatus} reason={tiktokReason} />
       {editing ? <ProfileForm mode="edit" initial={profile} /> : <MediaKitView profile={profile as CreatorProfile} name={name} email={email} />}
     </div>
   );
