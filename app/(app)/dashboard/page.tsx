@@ -8,10 +8,11 @@ import { listMeetings } from "@/lib/meetings/store";
 import { listRecentActivity } from "@/lib/activity/store";
 import { enrichAgentsWithLiveStatus } from "@/lib/agents/liveStatus";
 import { getTikTokConnection } from "@/lib/tiktok/store";
+import { getFacebookConnection } from "@/lib/facebook/store";
 import { colors, fonts } from "@/lib/theme";
 
 export default async function DashboardPage() {
-  const [clerkUser, rawAgents, teams, leads, pending, recentActivity, meetings, tiktok] = await Promise.all([
+  const [clerkUser, rawAgents, teams, leads, pending, recentActivity, meetings, tiktok, facebook] = await Promise.all([
     clerkCurrentUser(),
     listAgents(),
     listTeams(),
@@ -20,6 +21,7 @@ export default async function DashboardPage() {
     listRecentActivity(50),
     listMeetings(),
     getTikTokConnection(),
+    getFacebookConnection(),
   ]);
   const firstName = clerkUser?.firstName || "there";
   const agents = enrichAgentsWithLiveStatus(rawAgents, recentActivity);
@@ -79,8 +81,8 @@ export default async function DashboardPage() {
         activity={activityItems}
         chromeAbove={290}
         live
-        creatorAvatarUrl={tiktok?.avatarUrl ?? null}
-        creatorFollowers={tiktok?.followerCount ?? null}
+        creatorAvatarUrl={tiktok?.avatarUrl ?? facebook?.avatarUrl ?? null}
+        creatorFollowers={tiktok?.followerCount ?? facebook?.followerCount ?? null}
       />
 
       <h2 style={{ fontFamily: fonts.serif, fontWeight: 400, fontSize: 20, color: colors.paperWhite, margin: "36px 0 16px" }}>

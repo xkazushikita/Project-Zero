@@ -3,8 +3,10 @@ import { useState } from "react";
 import ProfileForm from "./ProfileForm";
 import MediaKitView from "./MediaKitView";
 import TikTokPanel from "./TikTokPanel";
+import FacebookPanel from "./FacebookPanel";
 import type { CreatorProfile } from "@/lib/profile/types";
 import type { TikTokConnection } from "@/lib/tiktok/store";
+import type { FacebookConnection } from "@/lib/facebook/store";
 import { colors, fonts } from "@/lib/theme";
 
 export default function ProfileClient({
@@ -15,6 +17,10 @@ export default function ProfileClient({
   tiktokConfigured,
   tiktokStatus,
   tiktokReason,
+  facebook,
+  facebookConfigured,
+  facebookStatus,
+  facebookReason,
 }: {
   profile: CreatorProfile | null;
   name: string;
@@ -23,6 +29,10 @@ export default function ProfileClient({
   tiktokConfigured: boolean;
   tiktokStatus: string | null;
   tiktokReason: string | null;
+  facebook: FacebookConnection | null;
+  facebookConfigured: boolean;
+  facebookStatus: string | null;
+  facebookReason: string | null;
 }) {
   const [editing, setEditing] = useState(!profile);
 
@@ -51,6 +61,7 @@ export default function ProfileClient({
         )}
       </div>
       <TikTokPanel connection={tiktok} configured={tiktokConfigured} status={tiktokStatus} reason={tiktokReason} />
+      <FacebookPanel connection={facebook} configured={facebookConfigured} status={facebookStatus} reason={facebookReason} />
       {editing ? <ProfileForm mode="edit" initial={profile} /> : <MediaKitView profile={profile as CreatorProfile} name={name} email={email} />}
     </div>
   );

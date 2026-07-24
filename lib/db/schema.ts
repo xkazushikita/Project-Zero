@@ -43,6 +43,22 @@ export const tiktokConnections = pgTable("tiktok_connections", {
   syncedAt: timestamp("synced_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// Facebook connection — one row per user, holds the connected Page's long-lived access token.
+export const facebookConnections = pgTable("facebook_connections", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  pageId: text("page_id").notNull(),
+  pageName: text("page_name"),
+  avatarUrl: text("avatar_url"),
+  followerCount: integer("follower_count"),
+  likeCount: integer("like_count"),
+  pageAccessToken: text("page_access_token").notNull(),
+  tokenExpiresAt: timestamp("token_expires_at", { withTimezone: true }),
+  connectedAt: timestamp("connected_at", { withTimezone: true }).notNull().defaultNow(),
+  syncedAt: timestamp("synced_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // Agents the user created themselves. The five presets are static data in code
 // (lib/agentTypes.ts) — only custom additions and overrides live here.
 export const agents = pgTable(
