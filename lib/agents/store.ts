@@ -86,6 +86,27 @@ export async function listAgents(): Promise<AppAgent[]> {
   return [...presetAgents, ...customAgents];
 }
 
+// For the public, logged-out welcome page — no signed-in user to scope to, so
+// this shows the preset team with whatever avatar photos have been set (this is
+// a single-creator app, so there's only ever one real set of photos to show).
+export async function getPublicAgentShowcase(): Promise<{ id: string; name: string; initials: string; color: string; status: AgentStatus; capabilities: CapabilityId[]; avatarUrl: string | null }[]> {
+  if (!isDbConfigured()) {
+    return AGENT_TYPES.map((a) => ({ id: a.id, name: a.name, initials: a.initials, color: a.color, status: a.status, capabilities: a.capabilities, avatarUrl: null }));
+  }
+  const db = getDb()!;
+  const configRows = await db.select().from(agentConfig);
+  const configMap = new Map(configRows.filter((r) => r.avatarUrl).map((r) => [r.agentId, r.avatarUrl]));
+  return AGENT_TYPES.map((a) => ({
+    id: a.id,
+    name: a.name,
+    initials: a.initials,
+    color: a.color,
+    status: a.status,
+    capabilities: a.capabilities,
+    avatarUrl: configMap.get(a.id) ?? null,
+  }));
+}
+
 export async function getAgent(id: string): Promise<AppAgent | null> {
   const all = await listAgents();
   return all.find((a) => a.id === id) ?? null;

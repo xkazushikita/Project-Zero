@@ -3,7 +3,11 @@ import Link from "next/link";
 import OrbitDashboard from "@/components/OrbitDashboard";
 import Reveal from "@/components/Reveal";
 import HeroIntro from "@/components/HeroIntro";
+import { getPublicAgentShowcase } from "@/lib/agents/store";
 import { colors, fonts } from "@/lib/theme";
+
+// Pulls real agent photos from the database on every visit, not just at build time.
+export const dynamic = "force-dynamic";
 
 const BUTTON_GHOST: CSSProperties = {
   display: "inline-block",
@@ -78,7 +82,8 @@ const STEPS = [
   { n: "04", title: "Send, book, close", body: "Open a pitch in your own mail app, book the call, and watch the deal move across your pipeline." },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const showcaseAgents = await getPublicAgentShowcase();
   return (
     <main style={{ maxWidth: 1216, margin: "0 auto", padding: "0 24px" }}>
       <HeroIntro>
@@ -112,7 +117,7 @@ export default function LandingPage() {
           </div>
 
           <div data-intro>
-            <OrbitDashboard />
+            <OrbitDashboard agents={showcaseAgents} />
           </div>
 
           <div style={{ textAlign: "center", maxWidth: 720, margin: "40px auto 0" }}>
