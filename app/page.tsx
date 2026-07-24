@@ -124,7 +124,7 @@ export default async function LandingPage() {
         {/* Hero */}
         <section style={{ paddingTop: 8, paddingBottom: 40 }}>
           <div data-intro style={{ textAlign: "center", marginBottom: 20 }}>
-            <span style={EYEBROW}>Your AI Sales Team</span>
+            <span style={EYEBROW}>AI Command Center</span>
           </div>
 
           <div data-intro>
