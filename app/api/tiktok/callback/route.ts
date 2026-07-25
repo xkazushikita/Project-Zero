@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     const res = NextResponse.redirect(new URL("/profile?tiktok=connected", origin));
     res.cookies.delete("tiktok_oauth_state");
     return res;
-  } catch {
-    return fail("Something went wrong talking to TikTok.");
+  } catch (err) {
+    return fail(err instanceof Error ? err.message : "Something went wrong talking to TikTok.");
   }
 }
