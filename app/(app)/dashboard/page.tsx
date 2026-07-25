@@ -53,6 +53,9 @@ export default async function DashboardPage() {
     .map((a) => ({ agentId: a.agentId, text: a.text }));
 
   const researched = leads.filter((l) => l.research).slice(0, 4);
+  const pitched = leads.filter((l) => l.outreach).slice(0, 4);
+  const proposed = leads.filter((l) => l.proposal).slice(0, 4);
+  const followedUp = leads.filter((l) => l.followup).slice(0, 4);
   const upcomingMeetings = meetings.filter((m) => new Date(m.whenAt) >= now).slice(0, 4);
 
   const panelStyle = { border: "1px solid " + colors.graphite, borderRadius: 12, padding: 20, background: colors.onyx } as const;
@@ -121,17 +124,47 @@ export default async function DashboardPage() {
 
         <div style={panelStyle}>
           <div style={panelTitle}>Outreach campaigns</div>
-          <div style={emptyStyle}>Not built yet — pitch drafting is coming soon.</div>
+          {pitched.length === 0 ? (
+            <div style={emptyStyle}>No pitches drafted yet.</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {pitched.map((l) => (
+                <Link key={l.id} href={"/deals/" + l.id} style={{ fontSize: 13.5, color: colors.bone }}>
+                  {l.name}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         <div style={panelStyle}>
           <div style={panelTitle}>Proposals</div>
-          <div style={emptyStyle}>Not built yet — priced proposals are coming soon.</div>
+          {proposed.length === 0 ? (
+            <div style={emptyStyle}>No proposals drafted yet.</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {proposed.map((l) => (
+                <Link key={l.id} href={"/deals/" + l.id} style={{ fontSize: 13.5, color: colors.bone }}>
+                  {l.name} {l.proposal?.price != null && <span style={{ color: colors.copper }}>· ${l.proposal.price.toLocaleString()}</span>}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         <div style={panelStyle}>
           <div style={panelTitle}>Follow-ups</div>
-          <div style={emptyStyle}>Not built yet — re-engagement nudges are coming soon.</div>
+          {followedUp.length === 0 ? (
+            <div style={emptyStyle}>No follow ups drafted yet.</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {followedUp.map((l) => (
+                <Link key={l.id} href={"/deals/" + l.id} style={{ fontSize: 13.5, color: colors.bone }}>
+                  {l.name}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         <div style={panelStyle}>

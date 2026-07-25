@@ -2,7 +2,7 @@ import type { AppAgent } from "./types";
 
 // Capabilities that actually have a real engine behind them right now.
 // Everything else gets an honest "not built yet" instead of a fake "Working".
-const IMPLEMENTED = ["scrape", "research", "book-meeting"];
+const IMPLEMENTED = ["scrape", "research", "book-meeting", "outreach", "proposal", "follow-up"];
 
 export function enrichAgentsWithLiveStatus(agents: AppAgent[], recentActivity: { agentId: string | null; text: string }[]): AppAgent[] {
   return agents.map((a) => {

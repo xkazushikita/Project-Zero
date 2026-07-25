@@ -4,6 +4,7 @@ import { getLead } from "@/lib/leads/store";
 import { listAgents } from "@/lib/agents/store";
 import { listMeetings } from "@/lib/meetings/store";
 import PrepareStrategyButton from "@/components/deals/PrepareStrategyButton";
+import DraftPanel from "@/components/deals/DraftPanel";
 import BookMeetingBox from "@/components/calendar/BookMeetingBox";
 import MeetingRow from "@/components/calendar/MeetingRow";
 import { colors, fonts } from "@/lib/theme";
@@ -54,7 +55,7 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
       </div>
 
       {lead.research ? (
-        <div style={{ border: "1px solid " + colors.graphite, borderRadius: 12, padding: 26, background: colors.onyx }}>
+        <div style={{ border: "1px solid " + colors.graphite, borderRadius: 12, padding: 26, background: colors.onyx, marginBottom: 20 }}>
           <div style={{ fontSize: 12.5, fontWeight: 600, color: colors.copper, textTransform: "uppercase", letterSpacing: "-0.02em", marginBottom: 18 }}>
             Pitch strategy
           </div>
@@ -96,10 +97,44 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
           </div>
         </div>
       ) : (
-        <div style={{ border: "1px dashed " + colors.graphite, borderRadius: 12, padding: 24, fontSize: 13.5, color: colors.fog }}>
-          No strategy yet — click &quot;Prepare strategy&quot; above.
+        <div style={{ border: "1px dashed " + colors.graphite, borderRadius: 12, padding: 24, fontSize: 13.5, color: colors.fog, marginBottom: 20 }}>
+          No strategy yet, click &quot;Prepare strategy&quot; above.
         </div>
       )}
+
+      <DraftPanel
+        kind="outreach"
+        title="Opening pitch"
+        emptyHint="No pitch drafted yet."
+        buttonLabel="Draft pitch"
+        redraftLabel="Redraft pitch"
+        leadId={lead.id}
+        agentId={lead.agentId}
+        draft={lead.outreach}
+      />
+
+      <DraftPanel
+        kind="proposal"
+        title="Proposal"
+        emptyHint="No proposal drafted yet."
+        buttonLabel="Draft proposal"
+        redraftLabel="Redraft proposal"
+        leadId={lead.id}
+        agentId={lead.agentId}
+        draft={lead.proposal}
+        price={lead.proposal?.price}
+      />
+
+      <DraftPanel
+        kind="follow-up"
+        title="Follow up nudge"
+        emptyHint="No follow up drafted yet."
+        buttonLabel="Draft follow up"
+        redraftLabel="Redraft follow up"
+        leadId={lead.id}
+        agentId={lead.agentId}
+        draft={lead.followup}
+      />
     </div>
   );
 }

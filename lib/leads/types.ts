@@ -9,6 +9,22 @@ export interface ResearchBrief {
   angle: string;
 }
 
+export interface OutreachDraft {
+  subject: string;
+  body: string;
+}
+
+export interface ProposalDraft {
+  subject: string;
+  body: string;
+  price: number | null;
+}
+
+export interface FollowUpDraft {
+  subject: string;
+  body: string;
+}
+
 export interface Lead {
   id: string;
   agentId: string | null;
@@ -23,6 +39,9 @@ export interface Lead {
   profileUrl: string | null;
   platform: string | null;
   research: ResearchBrief | null;
+  outreach: OutreachDraft | null;
+  proposal: ProposalDraft | null;
+  followup: FollowUpDraft | null;
   createdAt: string;
 }
 

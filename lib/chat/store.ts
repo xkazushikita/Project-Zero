@@ -5,15 +5,17 @@ import { revalidatePath } from "next/cache";
 import { getDb, isDbConfigured } from "@/lib/db";
 import { messages as messagesTable } from "@/lib/db/schema";
 import { listAgents } from "@/lib/agents/store";
-import { listLeads, getLead, saveLeadResearch } from "@/lib/leads/store";
+import { listLeads, getLead, saveLeadResearch, saveLeadOutreach, saveLeadProposal, saveLeadFollowup } from "@/lib/leads/store";
 import { getMyProfile } from "@/lib/profile/store";
 import { profileSummary } from "@/lib/profile/summary";
 import { draftResearch } from "@/lib/ai/research";
+import { draftOutreach } from "@/lib/ai/outreach";
+import { draftProposal } from "@/lib/ai/proposal";
+import { draftFollowUp } from "@/lib/ai/followup";
 import { runDiscovery } from "@/lib/discovery/run";
 import { bookMeetingFromText, listMeetings } from "@/lib/meetings/store";
 import { classifyChatIntent } from "@/lib/ai/chatRouter";
 import { trackJobStart, trackJobFinish } from "@/lib/jobs/store";
-import { CAPABILITIES } from "@/lib/agentTypes";
 import { STAGES } from "@/lib/leads/types";
 import type { AppAgent } from "@/lib/agents/types";
 import type { ChatMessage } from "./types";
@@ -112,9 +114,60 @@ export async function sendMessage(text: string): Promise<ChatMessage[]> {
         const counts = STAGES.map((s) => leadList.filter((l) => l.status === s.id).length + " " + s.label);
         reply = "Here's your pipeline: " + counts.join(", ") + ".";
       }
-    } else if (intent.capability === "outreach" || intent.capability === "proposal" || intent.capability === "follow-up") {
-      const label = CAPABILITIES.find((c) => c.id === intent.capability)?.label ?? intent.capability;
-      reply = "I can't do that one quite yet — " + label + " is still being built. For now I can find brands, prep a pitch strategy, or book a call.";
+    } else if (intent.capability === "outreach") {
+      const match = intent.leadName ? leadList.find((l) => l.name.toLowerCase() === intent.leadName!.toLowerCase()) : null;
+      if (!match) {
+        reply = "Happy to draft a pitch — which brand? Mention its name and I'll get to work (it needs to already be in your pipeline).";
+      } else {
+        const lead = await getLead(match.id);
+        const profile = await getMyProfile();
+        const context = profileSummary(profile);
+        if (!lead) {
+          reply = "Couldn't find that brand — try again?";
+        } else {
+          const jobId = await trackJobStart("outreach", actingAgent.id);
+          const result = await draftOutreach(actingAgent, lead, context);
+          await saveLeadOutreach(lead.id, result);
+          await trackJobFinish(jobId, "done");
+          reply = "Done — opening pitch ready for " + lead.name + ": \"" + result.subject + "\". Full draft is on that brand's page.";
+        }
+      }
+    } else if (intent.capability === "proposal") {
+      const match = intent.leadName ? leadList.find((l) => l.name.toLowerCase() === intent.leadName!.toLowerCase()) : null;
+      if (!match) {
+        reply = "Happy to put a proposal together — which brand? Mention its name and I'll get to work (it needs to already be in your pipeline).";
+      } else {
+        const lead = await getLead(match.id);
+        const profile = await getMyProfile();
+        const context = profileSummary(profile);
+        if (!lead) {
+          reply = "Couldn't find that brand — try again?";
+        } else {
+          const jobId = await trackJobStart("proposal", actingAgent.id);
+          const result = await draftProposal(actingAgent, lead, context, profile?.rateFloor ?? null);
+          await saveLeadProposal(lead.id, result);
+          await trackJobFinish(jobId, "done");
+          reply = "Done — proposal ready for " + lead.name + " at $" + (result.price ?? 0).toLocaleString() + ". Full draft is on that brand's page.";
+        }
+      }
+    } else if (intent.capability === "follow-up") {
+      const match = intent.leadName ? leadList.find((l) => l.name.toLowerCase() === intent.leadName!.toLowerCase()) : null;
+      if (!match) {
+        reply = "Happy to draft a follow up — which brand? Mention its name and I'll get to work (it needs to already be in your pipeline).";
+      } else {
+        const lead = await getLead(match.id);
+        const profile = await getMyProfile();
+        const context = profileSummary(profile);
+        if (!lead) {
+          reply = "Couldn't find that brand — try again?";
+        } else {
+          const jobId = await trackJobStart("follow-up", actingAgent.id);
+          const result = await draftFollowUp(actingAgent, lead, context);
+          await saveLeadFollowup(lead.id, result);
+          await trackJobFinish(jobId, "done");
+          reply = "Done — follow up ready for " + lead.name + ": \"" + result.subject + "\". Full draft is on that brand's page.";
+        }
+      }
     } else {
       reply =
         "Got it — for now you can ask me to find brands, prep a strategy for one, or book a call. Try \"@" +

@@ -1,0 +1,3 @@
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS outreach jsonb;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS proposal jsonb;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS followup jsonb;

@@ -4,7 +4,7 @@ import { eq, and, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getDb, isDbConfigured } from "@/lib/db";
 import { leads, activity } from "@/lib/db/schema";
-import type { Lead, LeadStatus, ResearchBrief } from "./types";
+import type { Lead, LeadStatus, ResearchBrief, OutreachDraft, ProposalDraft, FollowUpDraft } from "./types";
 
 function mapRow(r: typeof leads.$inferSelect): Lead {
   return {
@@ -21,6 +21,9 @@ function mapRow(r: typeof leads.$inferSelect): Lead {
     profileUrl: r.profileUrl,
     platform: r.platform,
     research: (r.research as ResearchBrief) ?? null,
+    outreach: (r.outreach as OutreachDraft) ?? null,
+    proposal: (r.proposal as ProposalDraft) ?? null,
+    followup: (r.followup as FollowUpDraft) ?? null,
     createdAt: r.createdAt.toISOString(),
   };
 }
@@ -47,6 +50,45 @@ export async function saveLeadResearch(id: string, research: ResearchBrief) {
     .where(and(eq(leads.id, id), eq(leads.userId, userId)));
   revalidatePath("/deals/" + id);
   revalidatePath("/deals");
+}
+
+export async function saveLeadOutreach(id: string, outreach: OutreachDraft) {
+  const { userId } = await auth();
+  if (!userId || !isDbConfigured()) return;
+  const db = getDb()!;
+  await db
+    .update(leads)
+    .set({ outreach, updatedAt: new Date() })
+    .where(and(eq(leads.id, id), eq(leads.userId, userId)));
+  revalidatePath("/deals/" + id);
+  revalidatePath("/deals");
+  revalidatePath("/dashboard");
+}
+
+export async function saveLeadProposal(id: string, proposal: ProposalDraft) {
+  const { userId } = await auth();
+  if (!userId || !isDbConfigured()) return;
+  const db = getDb()!;
+  await db
+    .update(leads)
+    .set({ proposal, updatedAt: new Date() })
+    .where(and(eq(leads.id, id), eq(leads.userId, userId)));
+  revalidatePath("/deals/" + id);
+  revalidatePath("/deals");
+  revalidatePath("/dashboard");
+}
+
+export async function saveLeadFollowup(id: string, followup: FollowUpDraft) {
+  const { userId } = await auth();
+  if (!userId || !isDbConfigured()) return;
+  const db = getDb()!;
+  await db
+    .update(leads)
+    .set({ followup, updatedAt: new Date() })
+    .where(and(eq(leads.id, id), eq(leads.userId, userId)));
+  revalidatePath("/deals/" + id);
+  revalidatePath("/deals");
+  revalidatePath("/dashboard");
 }
 
 // For the public, logged-out welcome page — real pipeline numbers instead of

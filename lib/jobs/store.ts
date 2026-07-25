@@ -15,6 +15,39 @@ export async function enqueueResearchJob(leadId: string, agentId: string | null)
   return row.id;
 }
 
+export async function enqueueOutreachJob(leadId: string, agentId: string | null): Promise<string | null> {
+  const { userId } = await auth();
+  if (!userId || !isDbConfigured()) return null;
+  const db = getDb()!;
+  const [row] = await db
+    .insert(jobs)
+    .values({ userId, agentId, kind: "outreach", params: { leadId }, status: "queued" })
+    .returning({ id: jobs.id });
+  return row.id;
+}
+
+export async function enqueueProposalJob(leadId: string, agentId: string | null): Promise<string | null> {
+  const { userId } = await auth();
+  if (!userId || !isDbConfigured()) return null;
+  const db = getDb()!;
+  const [row] = await db
+    .insert(jobs)
+    .values({ userId, agentId, kind: "proposal", params: { leadId }, status: "queued" })
+    .returning({ id: jobs.id });
+  return row.id;
+}
+
+export async function enqueueFollowupJob(leadId: string, agentId: string | null): Promise<string | null> {
+  const { userId } = await auth();
+  if (!userId || !isDbConfigured()) return null;
+  const db = getDb()!;
+  const [row] = await db
+    .insert(jobs)
+    .values({ userId, agentId, kind: "follow-up", params: { leadId }, status: "queued" })
+    .returning({ id: jobs.id });
+  return row.id;
+}
+
 // Lightweight "is this agent doing something right now" tracking for tasks that
 // run synchronously (discovery, chat-triggered research, booking) — not the
 // queued batch runner, just a marker so the dashboard can show a live pulse.
