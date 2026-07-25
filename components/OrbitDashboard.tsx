@@ -127,7 +127,7 @@ export default function OrbitDashboard({
   const nodes = validMembers.map((a, i) => {
     const ang = ((-90 + (i * 360) / HN) * Math.PI) / 180;
     const x = Math.round(380 + Math.cos(ang) * 272);
-    const y = Math.round(262 + Math.sin(ang) * 186);
+    const y = Math.round(262 + Math.sin(ang) * 162);
     const type = agentActivityType(a.capabilities);
     const ic = hubIcons[type];
     const isLive = liveWorkingIds.includes(a.id);
@@ -170,9 +170,9 @@ export default function OrbitDashboard({
       style={css(
         "position:relative;background:radial-gradient(900px 520px at 50% 38%,#121317,#08080a 75%);border:1px solid " +
           colors.graphite +
-          ";border-radius:20px;height:min(640px,calc(100dvh - " +
+          ";border-radius:22px;height:min(640px,calc(100dvh - " +
           chromeAbove +
-          "px));min-height:480px;overflow:hidden"
+          "px));min-height:480px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.02) inset"
       )}
     >
       <div style={css("position:absolute;top:16px;left:20px;right:150px;display:flex;gap:8px;z-index:3;flex-wrap:wrap")}>
@@ -214,12 +214,12 @@ export default function OrbitDashboard({
       >
         <div
           style={css(
-            "position:absolute;left:380px;top:262px;width:560px;height:380px;transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.06);border-radius:50%"
+            "position:absolute;left:380px;top:262px;width:560px;height:336px;transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.06);border-radius:50%"
           )}
         />
         <div
           style={css(
-            "position:absolute;left:380px;top:262px;width:400px;height:270px;transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.06);border-radius:50%"
+            "position:absolute;left:380px;top:262px;width:400px;height:238px;transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.06);border-radius:50%"
           )}
         />
 

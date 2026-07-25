@@ -37,11 +37,12 @@ const BUTTON_SOLID: CSSProperties = {
 };
 
 const EYEBROW: CSSProperties = {
-  fontSize: 13,
-  fontWeight: 600,
-  letterSpacing: "-0.02em",
+  fontSize: 16,
+  fontWeight: 700,
+  letterSpacing: "0.28em",
   color: colors.copper,
   textTransform: "uppercase",
+  textShadow: "0 0 24px rgba(204,145,102,.45)",
 };
 
 const CARD: CSSProperties = {
@@ -122,9 +123,17 @@ export default async function LandingPage() {
         </nav>
 
         {/* Hero */}
-        <section style={{ paddingTop: 8, paddingBottom: 40 }}>
-          <div data-intro style={{ textAlign: "center", marginBottom: 20 }}>
+        <section style={{ paddingTop: 24, paddingBottom: 40 }}>
+          <div data-intro style={{ textAlign: "center", marginBottom: 36 }}>
             <span style={EYEBROW}>AI Command Center</span>
+            <div
+              style={{
+                width: 64,
+                height: 2,
+                background: "linear-gradient(90deg, transparent, " + colors.copper + ", transparent)",
+                margin: "14px auto 0",
+              }}
+            />
           </div>
 
           <div data-intro>
