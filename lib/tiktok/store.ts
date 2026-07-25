@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getDb, isDbConfigured } from "@/lib/db";
 import { tiktokConnections, creatorProfile } from "@/lib/db/schema";
-import { TOKEN_URL, USER_INFO_URL } from "./config";
+import { TOKEN_URL, FULL_FIELDS, BASIC_FIELDS, userInfoUrl } from "./config";
 import type { PlatformEntry } from "@/lib/profile/types";
 
 export interface TikTokConnection {
@@ -41,8 +41,8 @@ interface TikTokUserInfo {
   follower_count?: number;
 }
 
-async function fetchTikTokUserInfo(accessToken: string): Promise<TikTokUserInfo> {
-  const res = await fetch(USER_INFO_URL, {
+async function fetchFields(accessToken: string, fields: string): Promise<TikTokUserInfo> {
+  const res = await fetch(userInfoUrl(fields), {
     headers: { Authorization: "Bearer " + accessToken },
   });
   const json = await res.json();
@@ -50,6 +50,16 @@ async function fetchTikTokUserInfo(accessToken: string): Promise<TikTokUserInfo>
     throw new Error(json.error?.message || "TikTok didn't return profile info");
   }
   return json.data.user as TikTokUserInfo;
+}
+
+// Tries for photo + name + follower count; if the creator only granted the basic
+// profile permission (not stats), falls back to just photo + name instead of failing.
+async function fetchTikTokUserInfo(accessToken: string): Promise<TikTokUserInfo> {
+  try {
+    return await fetchFields(accessToken, FULL_FIELDS);
+  } catch {
+    return await fetchFields(accessToken, BASIC_FIELDS);
+  }
 }
 
 // Called once by the OAuth callback right after exchanging the code for tokens.
