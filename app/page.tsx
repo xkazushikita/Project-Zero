@@ -59,7 +59,7 @@ const FEATURES = [
   },
   {
     title: "Pitches in your voice",
-    body: "Initial Outreach writes a personalized first-touch pitch — a polished email or a short DM — that sounds like you, not a template.",
+    body: "Initial Outreach writes a personalized opening pitch, a polished email or a short DM, that sounds like you, not a template.",
   },
   {
     title: "Prices the deal",
@@ -67,21 +67,21 @@ const FEATURES = [
   },
   {
     title: "Never lets it go cold",
-    body: "Follow-up re-engages brands that went quiet with a short, friendly nudge that builds on what was already said.",
+    body: "Follow up reconnects with brands that went quiet, sending a short, friendly nudge that builds on what was already said.",
   },
   {
     title: "Books the call",
-    body: "Scheduler parses plain-English requests like 'next Tuesday at 2pm' and puts real brand calls on your calendar.",
+    body: "Scheduler parses everyday requests like 'next Tuesday at 2pm' and puts real brand calls on your calendar.",
   },
   {
     title: "Shows you everything, live",
-    body: "Watch your team work in real time on the signature dashboard — who's active, what they're doing, and how many deals are moving.",
+    body: "Watch your team work in real time on the signature dashboard: who's active, what they're doing, and how many deals are moving.",
   },
 ];
 
 const STEPS = [
-  { n: "01", title: "Tell us who you are", body: "Fill in your niche, platforms, audience, and rates once — your Media Kit." },
-  { n: "02", title: "Your team gets to work", body: "Agents discover brands, research them, and draft pitches, proposals, and follow-ups." },
+  { n: "01", title: "Tell us who you are", body: "Fill in your niche, platforms, audience, and rates once, all in your Media Kit." },
+  { n: "02", title: "Your team gets to work", body: "Agents discover brands, research them, and draft pitches, proposals, and follow up messages." },
   { n: "03", title: "You stay in control", body: "New brands wait for your approval, and every pitch is a draft you review before it goes out." },
   { n: "04", title: "Send, book, close", body: "Open a pitch in your own mail app, book the call, and watch the deal move across your pipeline." },
 ];
@@ -157,7 +157,7 @@ export default async function LandingPage() {
             </h1>
             <p data-intro style={{ fontSize: 18, lineHeight: 1.5, color: colors.mist, marginTop: 18 }}>
               Agentic Sales Team finds brands, pitches them in your own voice, prices the deal, follows up, and
-              books the call — so you don&apos;t have to chase sponsorships between shoots.
+              books the call, so you don&apos;t have to chase sponsorships between shoots.
             </p>
             <div data-intro style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 28 }}>
               <Link href="/sign-up" style={{ ...BUTTON_SOLID, padding: "12px 26px", fontSize: 15 }}>
@@ -186,7 +186,7 @@ export default async function LandingPage() {
                 margin: 0,
               }}
             >
-              Everything a manager would do — automated
+              Everything a manager would do, automated
             </h2>
             <p style={{ color: colors.mist, marginTop: 14, fontSize: 16, lineHeight: 1.5 }}>
               Five specialist agents cover a brand deal end to end, grounded in your real Media Kit.
@@ -281,8 +281,8 @@ export default async function LandingPage() {
               Built for creators, not agencies
             </h2>
             <p style={{ color: colors.mist, marginTop: 16, fontSize: 16, lineHeight: 1.6, maxWidth: 620, marginInline: "auto" }}>
-              If you&apos;re a content creator who wants brand deals but doesn&apos;t have the time — or a human
-              manager — to chase them, Agentic Sales Team is the manager. You bring the audience; your AI team
+              If you&apos;re a content creator who wants brand deals but doesn&apos;t have the time (or a human
+              manager) to chase them, Agentic Sales Team is the manager. You bring the audience, your AI team
               does the legwork.
             </p>
           </div>
@@ -305,7 +305,7 @@ export default async function LandingPage() {
             Ready to let your team start working?
           </h2>
           <p style={{ color: colors.mist, marginTop: 14, fontSize: 16 }}>
-            Fill in your Media Kit once — your team takes it from there.
+            Fill in your Media Kit once. Your team takes it from there.
           </p>
           <div style={{ marginTop: 24 }}>
             <Link href="/sign-up" style={{ ...BUTTON_SOLID, padding: "13px 30px", fontSize: 15 }}>
